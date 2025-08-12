@@ -1,4 +1,4 @@
-from maze_env_registration import *  # Registers env
+from maze_env_registration import *
 import gymnasium as gym
 from stable_baselines3 import DQN
 from stable_baselines3.common.monitor import Monitor
@@ -8,7 +8,7 @@ import time
 import pandas as pd
 
 # Create environment
-env = gym.make("MazeEnv-v0", grid_size=10, render_mode="rgb_array")
+env = gym.make("MazeEnv-clear", grid_size=10, render_mode="rgb_array")
 
 # Train a DQN agent
 model = DQN("MlpPolicy", env, verbose=1)

@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import time
 
 # Load environment and model
-env = gym.make("MazeEnv-v0", grid_size=10, render_mode="rgb_array")
-model = DQN.load("dqn_maze_agent")
+env = gym.make("MazeEnv-walls", fixed_layout=True, grid_size=7, render_mode="rgb_array")
+model = DQN.load("wall_generation/dqn_maze_agent")
 
 obs, _ = env.reset()
 
