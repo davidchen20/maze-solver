@@ -24,59 +24,45 @@ class MazeEnv(gym.Env):
         # Start with a grid full of walls
         self.walls = np.ones((self.grid_size, self.grid_size), dtype=np.uint8)
         
-        # A stack to keep track of cells to visit
         stack = []
-        # Start the maze generation from a random cell
+
         start_x, start_y = (random.randint(0, self.grid_size - 1), random.randint(0, self.grid_size - 1))
-        self.walls[start_y, start_x] = 0 # Carve out the starting cell
+        self.walls[start_y, start_x] = 0 
         stack.append((start_x, start_y))
 
         while stack:
             current_x, current_y = stack[-1]
             neighbors = []
 
-            # Check for unvisited neighbors (cells that are still walls)
             for dx, dy in [(0, 2), (0, -2), (2, 0), (-2, 0)]:
                 nx, ny = current_x + dx, current_y + dy
                 if 0 <= nx < self.grid_size and 0 <= ny < self.grid_size and self.walls[ny, nx] == 1:
                     neighbors.append((nx, ny))
             
             if neighbors:
-                # Choose a random neighbor
                 next_x, next_y = random.choice(neighbors)
                 
-                # Carve a path to the neighbor
                 self.walls[next_y, next_x] = 0
                 self.walls[current_y + (next_y - current_y) // 2, current_x + (next_x - current_x) // 2] = 0
                 
                 stack.append((next_x, next_y))
             else:
-                # If no unvisited neighbors, backtrack
                 stack.pop()
 
         np.save("maze.npy", self.walls)
 
     def _place_agent_and_goal(self):
-        """
-        Places the agent and goal in valid, non-wall locations.
-        """
-        # Get all possible (y, x) coordinates that are not walls
         valid_positions = np.argwhere(self.walls == 0).tolist()
         
-        # Ensure there are at least two valid positions for agent and goal
         if len(valid_positions) < 2:
-            # This is unlikely but good practice to handle
-            # Regenerate maze if it's too small or has no path
             self.reset() 
             return
 
-        # Choose random positions for agent and goal
         # self.agent_pos = random.choice(valid_positions)
         self.agent_pos = [4, 4]
         # self.goal_pos = random.choice(valid_positions)
         self.goal_pos = [0, 0]
 
-        # Make sure agent and goal are not in the same spot
         # while np.array_equal(self.agent_pos, self.goal_pos):
         #     self.goal_pos = random.choice(valid_positions)
         
@@ -86,20 +72,14 @@ class MazeEnv(gym.Env):
 
 
     def reset(self, seed=None, options=None):
-        """
-        Resets the environment to an initial state.
-        This involves generating a new maze and placing the agent and goal.
-        """
         super().reset(seed=seed)
 
-        # Generate a new maze for the episode
         if self.fixed_layout:
             self.walls = np.load("maze.npy")
         else:
             self._generate_maze()
         self._place_agent_and_goal()
 
-        # Reset episode-specific variables
         self.previous_distance_squared = (self.agent_pos[0] - self.goal_pos[0])**2 + (self.agent_pos[1] - self.goal_pos[1])**2
         self.total_timesteps = 0
 
@@ -136,19 +116,9 @@ class MazeEnv(gym.Env):
                 reward -= 10
         self.agent_pos = [x, y]
 
-        # if tuple(self.agent_pos) in self.visited_nodes:
-        #     reward -= 0.5
-        # elif tuple(self.agent_pos) not in self.visited_nodes:
-        #     reward += 0.2
-        #     self.visited_nodes.add(tuple(self.agent_pos))
-
-        
-
-
         distance_squared = (self.agent_pos[1] - self.goal_pos[1])**2 + (self.agent_pos[0] - self.goal_pos[0])**2
         delta = self.previous_distance_squared - distance_squared
 
-        # STEP PENALTY: encourages agent to find quickest path
         reward -= 1
 
         reward += delta

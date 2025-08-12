@@ -15,7 +15,7 @@ class MazeEnv(gym.Env):
         self.action_space = spaces.Discrete(4)  # up, right, down, left
         self.reset()
         self.render_mode = render_mode
-        self.window_size = 500  # pixels
+        self.window_size = 500
         self.cell_size = self.window_size // self.grid_size
         self.window = None
         self.clock = None
@@ -23,75 +23,12 @@ class MazeEnv(gym.Env):
 
     def reset(self, seed=None, options=None):
         self.agent_pos = [0, 0]
-        # random_pos = np.random.randint(0, self.grid_size, size=2).tolist()
-        # while random_pos == [0, 0]:
-            # random_pos = np.random.randint(0, self.grid_size, size=2).tolist()
-        # self.goal_pos = random_pos
         self.goal_pos = [9, 8]
         self.previous_distance_squared = (self.agent_pos[1] - self.goal_pos[1])**2 + (self.agent_pos[0] - self.goal_pos[0])**2
         self.total_timesteps = 0
         self.visited_nodes = {tuple(self.agent_pos): 1}
 
         return self._get_obs(), {}
-
-    # def step(self, action):
-    #     reward = 0
-    #     done = False
-    #     x, y = self.agent_pos
-    #     if action == 0:
-    #         if y > 0: 
-    #             y -= 1
-    #         else:
-    #             reward -= 5
-    #     elif action == 1: 
-    #         if x < self.grid_size - 1: 
-    #             x += 1
-    #         else:
-    #             reward -= 5
-    #     elif action == 2: 
-    #         if y < self.grid_size - 1: 
-    #             y += 1
-    #         else:
-    #             reward -= 5
-    #     elif action == 3:
-    #         if x > 0: 
-    #             x -= 1
-    #         else:
-    #             reward -= 5
-    #     self.agent_pos = [x, y]
-
-    #     if tuple(self.agent_pos) in self.visited_nodes:
-    #         visit_count = self.visited_nodes.get(tuple(self.agent_pos))
-    #         reward -= 5 * (visit_count + 1)
-
-    #     self.visited_nodes[tuple(self.agent_pos)] = self.visited_nodes.get(tuple(self.agent_pos), 0) + 1
-
-    #     distance_squared = (self.agent_pos[1] - self.goal_pos[1])**2 + (self.agent_pos[0] - self.goal_pos[0])**2
-    #     delta = self.previous_distance_squared - distance_squared
-    #     # # -0.01 is a negative reward for time spent. Be careful to not make this value too big or else it will overshadow the reward for getting
-    #     # # closer to the target, encouraging behavior where the agent tries to minimize loss by shuffling back and forth
-    #     # reward += -0.5 + 0.1 * (self.previous_distance_squared - distance_squared)
-
-    #     # STEP PENALTY: encourages agent to find quickest path
-    #     reward -= 2
-
-    #     if delta > 0:
-    #         reward += 0.5 * delta
-    #     else:
-    #         reward += 1 * delta
-
-    #     if self.agent_pos == self.goal_pos:
-    #         done = True
-    #         reward += 100
-
-    #     if self.total_timesteps >= self.grid_size ** 2 and not done:
-    #         done = True
-    #         reward -= 50
-
-    #     self.previous_distance_squared = distance_squared
-
-    #     self.total_timesteps += 1
-    #     return self._get_obs(), reward, done, False, {}
     
     def step(self, action):
         reward = 0
@@ -119,19 +56,9 @@ class MazeEnv(gym.Env):
                 reward -= 0.8
         self.agent_pos = [x, y]
 
-        # if tuple(self.agent_pos) in self.visited_nodes:
-        #     visit_count = self.visited_nodes.get(tuple(self.agent_pos))
-        #     reward -= 5 * (visit_count + 1)
-
-        # self.visited_nodes[tuple(self.agent_pos)] = self.visited_nodes.get(tuple(self.agent_pos), 0) + 1
-
         distance_squared = (self.agent_pos[1] - self.goal_pos[1])**2 + (self.agent_pos[0] - self.goal_pos[0])**2
         delta = self.previous_distance_squared - distance_squared
-        # # -0.01 is a negative reward for time spent. Be careful to not make this value too big or else it will overshadow the reward for getting
-        # # closer to the target, encouraging behavior where the agent tries to minimize loss by shuffling back and forth
-        # reward += -0.5 + 0.1 * (self.previous_distance_squared - distance_squared)
-
-        # STEP PENALTY: encourages agent to find quickest path
+    
         reward -= 1
 
         reward += 0.5 * delta
